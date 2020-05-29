@@ -1,6 +1,7 @@
-```
-$ roll d6
+# Basic Rolls
 
+```
+$ d6
 +---------+
 |  STATS  |
 +---------+
@@ -25,12 +26,11 @@ d6
 +----------------+
 |  RANDOM ROLLS  |
 +----------------+
-- d6: 1
+  d6 = 6
 ```
 
 ```
-$ roll 1+2d12
-
+$ 1+2d12
 +---------+
 |  STATS  |
 +---------+
@@ -72,7 +72,7 @@ avg: 14
 +----------------+
 |  RANDOM ROLLS  |
 +----------------+
-- 1 + 2 × d12: 15
+  1 + 2 × d12 (11, 10) = 22
 ```
 
 # Target check
@@ -80,8 +80,7 @@ avg: 14
 ###### 4 or higher succeeds on a d8
 
 ```
-$ roll d8/4
-
+$ d8/4
 +---------+
 |  STATS  |
 +---------+
@@ -105,19 +104,19 @@ d8
 7: 1 of 8 (12.5%)
 8: 1 of 8 (12.5%)
 
-+-----------+
-|  TARGETS  |
-+-----------+
-- d8: 5
++----------------+
+|  TARGET ROLLS  |
++----------------+
+  d8 = 6
+
 %rolls >=4: 5 of 8 (62.5%)
-target: Succeeds
+target: Succeeded
 ```
 
 ###### 4 or LOWER succeeds on a d8
 
 ```
-$ roll d8/-4
-
+$ d8/-4
 +---------+
 |  STATS  |
 +---------+
@@ -141,19 +140,19 @@ d8
 7: 1 of 8 (12.5%)
 8: 1 of 8 (12.5%)
 
-+-----------+
-|  TARGETS  |
-+-----------+
-- d8: 3
++----------------+
+|  TARGET ROLLS  |
++----------------+
+  d8 = 1
+
 %rolls <=4: 4 of 8 (50.0%)
-target: Succeeds
+target: Succeeded
 ```
 
 # Chance of either roll succeeding
 
 ```
-$ roll d8,d6/+4
-
+$ d8,d6/+4
 +---------+
 |  STATS  |
 +---------+
@@ -188,17 +187,17 @@ d8,d6
 +----------------+
 d8,d6
 -----
-- d8: 2
-- d6: 4
+  d8 = 6
+  d6 = 4
+
 %rolls >=4: 39 of 48 (81.2%)
-target: Succeeds
+target: Succeeded
 ```
 
 # Roll multiple target dice in succession, every roll must succeed
 
 ```
-$ roll d8/4 d6/4
-
+$ d8/4 d6/4
 +---------+
 |  STATS  |
 +---------+
@@ -240,12 +239,15 @@ d6
 +----------------+
 |  TARGET ROLLS  |
 +----------------+
-- d8: 8
+  d8 = 3
+
 %rolls >=4: 5 of 8 (62.5%)
-target: Succeeded
-- d6: 1
-%rolls >=4: 3 of 6 (50.0%)
 target: Failed
+
+  d6 = 5
+
+%rolls >=4: 3 of 6 (50.0%)
+target: Succeeded
 
 +-----------------+
 |  TOTAL SUCCESS  |
@@ -263,6 +265,7 @@ then_ needs to roll a 6 or higher using a `d12` with a `+1` modifier, or a `d6`
 wild dice.
 
 ```
+$ d10,d6/4 1+d12,d6/6
 +---------+
 |  STATS  |
 +---------+
@@ -321,16 +324,16 @@ d10,d6
 +----------------+
 d10,d6
 ------
-- d10: 8
-- d6: 4
+  d10 = 4
+  d6 = 5
 
 %rolls >=4: 51 of 60 (85.0%)
 target: Succeeded
 
 1+d12,d6
 --------
-- 1 + d12: 5
-- d6: 2
+  1 + d12 (4) = 5
+  d6 = 2
 
 %rolls >=6: 52 of 72 (72.2%)
 target: Failed

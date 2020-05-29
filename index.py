@@ -49,25 +49,33 @@ class Die:
         self.max = plus + count * die
         self.avg = plus + count * (die + 1) / 2.0
 
-    def header(self):
+        sum = self.plus
+        rolls = []
+        for _ in range(0, self.count):
+            roll = random.randint(1, self.die)
+            rolls.append(roll)
+            sum += roll
+        self.random_roll = sum, rolls
+
+    def header(self, show_rolls=False):
+        rolls = ''
+        if show_rolls and self.die:
+            rolls = ' (' + (', '.join([str(i) for i in self.random_roll[1]])) + ')'
+
         if self.plus and self.die:
             if self.count == 1:
-                return f'{self.plus} + d{self.die}'
+                return f'{self.plus} + d{self.die}{rolls}'
             else:
-                return f'{self.plus} + {self.count} × d{self.die}'
+                return f'{self.plus} + {self.count} × d{self.die}{rolls}'
         if self.plus:
             return f'{self.plus}'
         if self.count == 1:
-            return f'd{self.die}'
+            return f'd{self.die}{rolls}'
         else:
-            return f'{self.count} × d{self.die}'
+            return f'{self.count} × d{self.die}{rolls}'
 
     def roll(self):
-        sum = self.plus
-        for _ in range(0, self.count):
-            roll = random.randint(1, self.die)
-            sum += roll
-        return sum
+        return self.random_roll[0]
 
     def all_possible_rolls(self):
         if not self.die and not self.plus:
@@ -85,7 +93,7 @@ class Die:
         return one_die_roll(self.die, self.count)
 
     def __repr__(self):
-        return f'<{self.header()}, min: {self.min}, max: {self.max}, avg: {self.avg}>'
+        return f'<{self.header(show_rolls=True)}, min: {self.min}, max: {self.max}, avg: {self.avg}>'
 
     @classmethod
     def parse(cls, dice_input):
@@ -149,7 +157,7 @@ class Report:
             for roll in self.rolls:
                 roll.print()
 
-        if len(self.successes) > 1:
+        if len(self.successes[1]) > 1:
             did_succeed, successes = self.successes
             success = reduce(lambda m, p: m * p, successes, 1)
             section('TOTAL SUCCESS')
@@ -218,8 +226,10 @@ class Rolls:
         self.rolls = rolls
 
     def print(self):
-        for (header, roll) in self.rolls:
-            print(f'- {header}: {roll}')
+        for roll_data in self.rolls:
+            total_roll, dice = roll_data
+            header = ' + '.join([die.header(show_rolls=len(dice) > 1) for die in dice])
+            print(f'  {header} = {total_roll}')
         print()
 
 
@@ -284,13 +294,13 @@ for dice_input in attempts:
         dice_min = reduce(add_min, dice, 0)
         dice_max = reduce(add_max, dice, 0)
         avg = reduce(add_avg, dice, 0)
-        roll = reduce(lambda a, b: a + b, [d.roll() for d in dice], 0)
+        total_roll = reduce(lambda a, b: a + b, [die.roll() for die in dice], 0)
         if target and target_gt:
-            any_roll_success = any_roll_success or roll >= target
+            any_roll_success = any_roll_success or total_roll >= target
         elif target:
-            any_roll_success = any_roll_success or roll <= target
+            any_roll_success = any_roll_success or total_roll <= target
 
-        all_rolls.append(roll)
+        all_rolls.append(total_roll)
 
         possible_rolls = reduce(add_die_rolls, dice, [0])
         all_possible_rolls = combine_rolls(all_possible_rolls, possible_rolls)
@@ -298,7 +308,7 @@ for dice_input in attempts:
         all_max = max(dice_max, all_max is None and dice_max or all_max)
 
         header = ' + '.join(map(lambda d: d.header(), dice))
-        all_random_rolls.append((header, roll))
+        all_random_rolls.append((total_roll, dice))
         report.append_stats(header, dice_min, dice_max, avg)
 
     len_all_possible_rolls = len(all_possible_rolls)
