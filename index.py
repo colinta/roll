@@ -16,16 +16,15 @@ for arg in sys.argv[1:]:
     is_die = not is_die
 if not is_die:
     attempts.append((attempt_die, None))
+if not attempts:
+    sys.stderr.write('Missing dice argument\n')
+    sys.exit(1)
 
 successes = []
 for (dice_input, target) in attempts:
-    if not attempts:
-        sys.stderr.write('Missing dice argument\n')
-        sys.exit(1)
-
     if not re.match(r'(\d+|\d*d\d+)(\+(\d+|\d*d\d+))*', dice_input):
         sys.stderr.write('Invalid dice: `{}`\n'.format(dice_input))
-        sys.stderr.write('Dice be in the form "[A]+[N]d[X]" where A, N, X are integers.\n')
+        sys.stderr.write('Dice must be in the form "[A]+[N]d[X]" where A, N, X are integers.\n')
         sys.exit(1)
 
     target_gt = True
@@ -133,15 +132,14 @@ for (dice_input, target) in attempts:
     all_rolls = reduce(all_rolls, dice, [0])
     len_all_rolls = len(all_rolls)
 
-    if len(attempts) == 1:
-        header = ' + '.join(map(lambda d: d.header(), dice))
-        line = '-' * len(header)
-        print(header)
-        print(line)
-        print('min: {}'.format(min))
-        print('max: {}'.format(max))
-        print('avg: {}'.format(avg))
-        print(line)
+    header = ' + '.join(map(lambda d: d.header(), dice))
+    line = '-' * len(header)
+    print(header)
+    print(line)
+    print('min: {}'.format(min))
+    print('max: {}'.format(max))
+    print('avg: {}'.format(avg))
+    print(line)
 
     # probability of any roll
     target_counts = 0
@@ -151,19 +149,24 @@ for (dice_input, target) in attempts:
             target_counts += count
         elif target and not target_gt and val <= target:
             target_counts += count
-        if len(attempts) == 1:
             print('{}: {} of {} ({}%)'.format(val, count, len_all_rolls, percent(count, len_all_rolls)))
 
     if target:
-        if len(attempts) == 1:
-            print('target {}{}: {} of {} ({}%)'.format(target_gt and '>=' or '<=', target, target_counts, len_all_rolls, percent(target_counts, len_all_rolls)))
+        print('target {}{}: {} of {} ({}%)'.format(target_gt and '>=' or '<=', target, target_counts, len_all_rolls, percent(target_counts, len_all_rolls)))
         successes.append(target_counts / float(len_all_rolls))
-    else:
-        print('random roll:')
-        roll = reduce(lambda a, b: a + b, [d.roll() for d in dice], 0)
-        print('     {}'.format(roll))
+
+    roll = reduce(lambda a, b: a + b, [d.roll() for d in dice], 0)
+
+    print(line)
+    print('random roll: {}'.format(roll))
+    if target:
+        if target_gt:
+            success = roll >= target
+        else:
+            success = roll <= target
+        print('target: {}'.format(success and 'Succeeds' or 'Failed'))
 
 if len(successes) > 1:
     success = reduce(lambda m, p: m * p, successes, 1)
     print('-' * 20)
-    print('Total success: {}'.format(percent(success, 1)))
+    print('Total success chance: {}%'.format(percent(success, 1)))
