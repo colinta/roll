@@ -53,7 +53,10 @@ avg: 14
 random roll: 22
 ```
 
-Target check:
+# Target check
+
+###### 4 or higher succeeds on a d8
+
 `roll d8 4`
 
 ```
@@ -77,8 +80,31 @@ random roll: 1
 target: Failed
 ```
 
-Roll multiple target dice in succession:
+###### 4 or LOWER succeeds on a d8
+
+`roll d8 -4`
+
+```
+d8
+--
+min: 1
+max: 8
+avg: 4.5
+--
+1: 1 of 8 (12.5%)
+2: 1 of 8 (12.5%)
+3: 1 of 8 (12.5%)
+4: 1 of 8 (12.5%)
+target <=4: 4 of 8 (50.0%)
+--
+random roll: 2
+target: Succeeds
+```
+
+# Roll multiple target dice in succession, each roll must succeed
+
 (weird, I know, but this was a feature I needed)
+
 `roll d8 4 d6 4`
 
 ```
