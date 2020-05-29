@@ -20,6 +20,71 @@ if not attempts:
     sys.stderr.write('Missing dice argument\n')
     sys.exit(1)
 
+
+class Die:
+    def __init__(self, plus, count, die):
+        self.plus = plus
+        self.count = count
+        self.die = die
+        self.min = plus + count
+        self.max = plus + count * die
+        self.avg = plus + count * (die + 1) / 2.0
+
+    def header(self):
+        if self.plus and self.die:
+            if self.count == 1:
+                return '{} + d{}'.format(self.plus, self.count, self.die)
+            else:
+                return '{} + {} × d{}'.format(self.plus, self.count, self.die)
+        if self.plus:
+            return '{}'.format(self.plus)
+        if self.count == 1:
+            return 'd{}'.format(self.die)
+        else:
+            return '{} × d{}'.format(self.count, self.die)
+
+    def roll(self):
+        sum = self.plus
+        for _ in range(0, self.count):
+            roll = random.randint(1, self.die)
+            sum += roll
+        return sum
+
+    def all_rolls(self):
+        if not self.die and not self.plus:
+            return []
+        if not (self.die and self.count):
+            return [self.plus]
+
+        def one_die_roll(die, count):
+            roll_range = range(1, die + 1)
+            if count == 1:
+                return [n for n in roll_range]
+            rolls = one_die_roll(die, count - 1)
+            return [n + r for r in rolls for n in roll_range]
+
+        return one_die_roll(self.die, self.count)
+
+    def __repr__(self):
+        return '<{}, min: {}, max: {}>'.format(self.header(), self.min, self.max)
+
+    @classmethod
+    def parse(cls, dice_input):
+        if 'd' in dice_input:
+            try:
+                (count, die) = dice_input.split('d', 2)
+            except ValueError:
+                sys.stderr.write('Invalid dice: `{}`\n'.format(dice_input))
+                sys.exit(1)
+            if count:
+                count = int(count)
+            else:
+                count = 1
+            return Die(0, count, int(die))
+        else:
+            return Die(int(dice_input), 0, 0)
+
+
 successes = []
 for (dice_input, target) in attempts:
     if not re.match(r'(\d+|\d*d\d+)(\+(\d+|\d*d\d+))*', dice_input):
@@ -42,70 +107,6 @@ for (dice_input, target) in attempts:
         except ValueError:
             sys.stderr.write('Invalid target: `{}`\n'.format(target))
             sys.exit(1)
-
-    class Die:
-        def __init__(self, plus, count, die):
-            self.plus = plus
-            self.count = count
-            self.die = die
-            self.min = plus + count
-            self.max = plus + count * die
-            self.avg = plus + count * (die + 1) / 2.0
-
-        def header(self):
-            if self.plus and self.die:
-                if self.count == 1:
-                    return '{} + d{}'.format(self.plus, self.count, self.die)
-                else:
-                    return '{} + {} × d{}'.format(self.plus, self.count, self.die)
-            if self.plus:
-                return '{}'.format(self.plus)
-            if self.count == 1:
-                return 'd{}'.format(self.die)
-            else:
-                return '{} × d{}'.format(self.count, self.die)
-
-        def roll(self):
-            sum = self.plus
-            for _ in range(0, self.count):
-                roll = random.randint(1, self.die)
-                sum += roll
-            return sum
-
-        def all_rolls(self):
-            if not self.die and not self.plus:
-                return []
-            if not (self.die and self.count):
-                return [self.plus]
-
-            def one_die_roll(die, count):
-                roll_range = range(1, die + 1)
-                if count == 1:
-                    return [n for n in roll_range]
-                rolls = one_die_roll(die, count - 1)
-                return [n + r for r in rolls for n in roll_range]
-
-            return one_die_roll(self.die, self.count)
-
-        def __repr__(self):
-            return '<{}, min: {}, max: {}>'.format(self.header(), self.min, self.max)
-
-        @classmethod
-        def parse(cls, dice_input):
-            if 'd' in dice_input:
-                try:
-                    (count, die) = dice_input.split('d', 2)
-                except ValueError:
-                    sys.stderr.write('Invalid dice: `{}`\n'.format(dice_input))
-                    sys.exit(1)
-                if count:
-                    count = int(count)
-                else:
-                    count = 1
-                return Die(0, count, int(die))
-            else:
-                return Die(int(dice_input), 0, 0)
-
 
     all_dice_inputs = dice_input.split('+')
     dice = [Die.parse(input) for input in all_dice_inputs]
