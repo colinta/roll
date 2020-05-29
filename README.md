@@ -258,9 +258,9 @@ Target rolls: Failed
 
 ###### Scenario
 
-Player needs to first roll a 4 or higher using a `d10` or a `d6` wild dice,
-_and then_ succeed on a 6 or higher using a `d12` with a `+1` modifier, or a
-`d6` wild dice.
+Player needs to first roll a 4 or higher using a `d10` or a `d6` wild dice, _and
+then_ needs to roll a 6 or higher using a `d12` with a `+1` modifier, or a `d6`
+wild dice.
 
 ```
 $ roll d10,d6/4 1+d12,d6/6
