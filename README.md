@@ -101,6 +101,40 @@ random roll: 2
 target: Succeeds
 ```
 
+# Chance of either roll succeeding
+
+`roll d8,d6 4`
+
+```
+d8
+--
+min: 1
+max: 8
+avg: 4.5
+--
+d6
+--
+min: 1
+max: 6
+avg: 3.5
+--
+1: 13 of 48 (27.1%)
+2: 13 of 48 (27.1%)
+3: 13 of 48 (27.1%)
+4: 13 of 48 (27.1%)
+5: 13 of 48 (27.1%)
+6: 13 of 48 (27.1%)
+7: 6 of 48 (12.5%)
+8: 6 of 48 (12.5%)
+target >=4: 39 of 48 (81.2%)
+--
+random rolls:
+d8: 1
+d6: 6
+target: Succeeds
+--
+```
+
 # Roll multiple target dice in succession, each roll must succeed
 
 (weird, I know, but this was a feature I needed)
