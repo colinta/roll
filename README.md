@@ -1,6 +1,6 @@
-`roll d6`
-
 ```
+$ roll d6
+
 +---------+
 |  STATS  |
 +---------+
@@ -28,9 +28,9 @@ d6
 - d6: 1
 ```
 
-`roll 1+2d12`
-
 ```
+$ roll 1+2d12
+
 +---------+
 |  STATS  |
 +---------+
@@ -79,9 +79,9 @@ avg: 14
 
 ###### 4 or higher succeeds on a d8
 
-`roll d8/4`
-
 ```
+$ roll d8/4
+
 +---------+
 |  STATS  |
 +---------+
@@ -115,9 +115,9 @@ target: Succeeds
 
 ###### 4 or LOWER succeeds on a d8
 
-`roll d8/-4`
-
 ```
+$ roll d8/-4
+
 +---------+
 |  STATS  |
 +---------+
@@ -151,9 +151,9 @@ target: Succeeds
 
 # Chance of either roll succeeding
 
-`roll d8,d6/+4`
-
 ```
+$ roll d8,d6/+4
+
 +---------+
 |  STATS  |
 +---------+
@@ -196,9 +196,9 @@ target: Succeeds
 
 # Roll multiple target dice in succession, every roll must succeed
 
-`roll d8/4 d6/4`
-
 ```
+$ roll d8/4 d6/4
+
 +---------+
 |  STATS  |
 +---------+
@@ -262,9 +262,9 @@ Player needs to first roll a 4 or higher using a `d10` or a `d6` wild dice,
 _and then_ succeed on a 6 or higher using a `d12` with a `+1` modifier, or a
 `d6` wild dice.
 
-`roll d10,d6/4 1+d12,d6/6`
-
 ```
+$ roll d10,d6/4 1+d12,d6/6
+
 +---------+
 |  STATS  |
 +---------+
