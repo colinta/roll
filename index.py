@@ -136,16 +136,15 @@ class Report:
             print(f'avg: {avg}')
             print()
 
-        if self.percentages:
-            section('PERCENTAGES')
-            for data in self.percentages:
-                data.print()
+        section('PERCENTAGES')
+        for data in self.percentages:
+            data.print()
 
         if self.targets:
             section('TARGET ROLLS')
             for target in self.targets:
                 target.print()
-        elif self.rolls:
+        else:
             section('RANDOM ROLLS')
             for roll in self.rolls:
                 roll.print()
@@ -153,7 +152,6 @@ class Report:
         if len(self.successes) > 1:
             did_succeed, successes = self.successes
             success = reduce(lambda m, p: m * p, successes, 1)
-            print()
             section('TOTAL SUCCESS')
             print(f'%chance: {percent(success, 1)}%')
             success_text = did_succeed and 'Succeeded' or 'Failed'
@@ -212,6 +210,7 @@ class Target:
         print(f'%rolls {operator}{target}: {target_counts} of {len_all} ({percent}%)')
         success_text = did_succeed and 'Succeeded' or 'Failed'
         print(f'target: {success_text}')
+        print()
 
 
 class Rolls:
@@ -221,6 +220,7 @@ class Rolls:
     def print(self):
         for (header, roll) in self.rolls:
             print(f'- {header}: {roll}')
+        print()
 
 
 def add_min(memo, die):

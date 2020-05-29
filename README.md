@@ -263,8 +263,6 @@ then_ needs to roll a 6 or higher using a `d12` with a `+1` modifier, or a `d6`
 wild dice.
 
 ```
-$ roll d10,d6/4 1+d12,d6/6
-
 +---------+
 |  STATS  |
 +---------+
@@ -323,20 +321,23 @@ d10,d6
 +----------------+
 d10,d6
 ------
-- d10: 6
-- d6: 3
+- d10: 8
+- d6: 4
+
 %rolls >=4: 51 of 60 (85.0%)
 target: Succeeded
+
 1+d12,d6
 --------
-- 1 + d12: 12
+- 1 + d12: 5
 - d6: 2
+
 %rolls >=6: 52 of 72 (72.2%)
-target: Succeeded
+target: Failed
 
 +-----------------+
 |  TOTAL SUCCESS  |
 +-----------------+
 %chance: 61.4%
-Target rolls: Succeeded
+Target rolls: Failed
 ```
