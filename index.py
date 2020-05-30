@@ -24,19 +24,25 @@ re_dice = r'\d* *d\d+'
 re_either = r'({}|{})'.format(re_constant, re_dice)
 re_dice_formula = r'{0}(\+{0})*'.format(re_either)
 re_all_dice = r'{0}(,{0})*'.format(re_dice_formula)
-re_target = r'(/{})?'.format(re_constant)
+re_target = r'(/([+-=]?\d+|\d+-\d+))?'
 re_final = r'^{}{}$'.format(re_all_dice, re_target)
 re_input = re.compile(re_final)
+re_target_range = re.compile(r'^\d+-\d+$')
 
 for dice_input in attempts:
     if not re_input.match(dice_input):
         sys.stderr.write(f'Invalid dice: `{dice_input}`\n')
-        sys.stderr.write('Dice must be in the form "{{M}}+{{N}}d{{X}}(,...more dice)[/{{T}}]" where M, N, X, T are integers.\n')
+        sys.stderr.write('Dice must be in the form "[+,-]{{M}}+{{N}}d{{X}}(,...more dice)[/{{T}}]" where M, N, X, T are:\n')
         sys.stderr.write('M - Modifier (positive or negative)\n')
         sys.stderr.write('N - Number of dice\n')
         sys.stderr.write('X - Number of sides\n')
-        sys.stderr.write('T - Target value (4 or +4 means "Greater than or equal to 4" and -4 means "Less than or equal to 4")\n')
-        sys.stderr.write('Multiple Dice expressions can be tested against the target value (e.g. Savage Worlds Wild Die).\n')
+        sys.stderr.write('T - Target value\n')
+        sys.stderr.write('    4 or +4 means "Greater than or equal to 4"\n')
+        sys.stderr.write('    -4 means "Less than or equal to 4"\n')
+        sys.stderr.write('    =4 means "Equal to 4"\n')
+        sys.stderr.write('    3-5 means "In the range 3-5, inclusive"\n')
+        sys.stderr.write('\n')
+        sys.stderr.write('When more dice are included, any can be used to match the target (e.g. Savage Worlds Wild Die).\n')
         sys.exit(1)
 
 
@@ -127,41 +133,71 @@ def line(name):
     print('-' * name)
 
 
+TARGET_GTE = '>='
+TARGET_LTE = '<='
+TARGET_EQ = '=='
+TARGET_RANGE = '[]'
+def target_test(val, target, target_op):
+    if target_op == TARGET_GTE and val >= target:
+        return True
+    elif target_op == TARGET_LTE and val <= target:
+        return True
+    elif target_op == TARGET_EQ and val == target:
+        return True
+    elif target_op == TARGET_RANGE and val >= target[0] and val <= target[1]:
+        return True
+    return False
+
+def target_description(target_op, target):
+    if target_op == TARGET_GTE:
+        return f'>= {target}'
+    elif target_op == TARGET_LTE:
+        return f'<= {target}'
+    elif target_op == TARGET_EQ:
+        return f'== {target}'
+    elif target_op == TARGET_RANGE:
+        return f'{target[0]}<=...<={target[1]}'
+    return ''
+
+
 class Report:
     def __init__(self):
         self.stats = []
         self.percentages = []
-        self.targets = []
         self.rolls = []
         self.successes = None
 
-    def print(self):
-        section('STATS')
-        for (header, dice_min, dice_max, avg) in self.stats:
-            label(header)
-            print(f'min: {dice_min}')
-            print(f'max: {dice_max}')
-            print(f'avg: {avg}')
+    def print(self, show_stats, show_percentages, show_rolls):
+        if show_stats:
+            section('STATS')
+            for (header, dice_min, dice_max, avg) in self.stats:
+                label(header)
+                print(f'min: {dice_min}')
+                print(f'max: {dice_max}')
+                print(f'avg: {avg}')
+                print()
+
+        if show_percentages:
+            section('PERCENTAGES')
+            for data in self.percentages:
+                data.print()
+
+        if show_rolls:
+            section('ROLLS')
+
+            for (type, roll) in self.rolls:
+                if type == 'target':
+                    roll.print(show_stats=show_stats, show_rolls=show_rolls)
+                else:
+                    roll.print()
             print()
 
-        section('PERCENTAGES')
-        for data in self.percentages:
-            data.print()
-
-        if self.targets:
-            section('TARGET ROLLS')
-            for target in self.targets:
-                target.print()
-        else:
-            section('RANDOM ROLLS')
-            for roll in self.rolls:
-                roll.print()
-
-        if len(self.successes[1]) > 1:
+        if show_rolls and len(self.successes[1]) > 1:
             did_succeed, successes = self.successes
             success = reduce(lambda m, p: m * p, successes, 1)
             section('TOTAL SUCCESS')
-            print(f'%chance: {percent(success, 1)}%')
+            if show_stats:
+                print(f'%chance: {percent(success, 1)}%')
             success_text = did_succeed and 'Succeeded' or 'Failed'
             print(f'Target rolls: {success_text}')
 
@@ -176,48 +212,58 @@ class Report:
         self.percentages.append(data)
 
     def append_target(self, target):
-        if any(map(lambda entry: entry.name == target.name, self.targets)):
-            return
-        self.targets.append(target)
+        self.rolls.append(('target', target))
 
     def append_rolls(self, rolls):
-        self.rolls.append(rolls)
+        self.rolls.append(('roll', rolls))
 
     def set_successes(self, did_succeed, successes):
         self.successes = (did_succeed, successes)
 
 
 class Percentages:
-    def __init__(self, all_dice):
+    def __init__(self, all_dice, target, target_op):
         self.name = ','.join(all_dice)
+        if target:
+            self.name += ' ' + target_description(target_op, target)
         self.stats = []
+        self.target = None
 
     def print(self):
         print(self.name)
         print('-' * len(self.name))
         for (val, count, len_all, percent) in self.stats:
             print(f'{val}: {count} of {len_all} ({percent}%)')
+        if self.target:
+            target, target_op, target_counts, len_all, percent = self.target
+            operator = target_description(target_op, target)
+            print(f'% of rolls {operator}: {target_counts} of {len_all} ({percent}%)')
         print()
 
-    def append_stats(self, val, count, len_all, percent):
-        self.stats.append((val, count, len_all, percent))
+    def append_stats(self, val, count, len_all):
+        self.stats.append((val, count, len_all, percent(count, len_all)))
+
+    def set_target_percentages(self, target, target_op, target_counts, len_all):
+        self.target = (target, target_op, target_counts, len_all, percent(target_counts, len_all))
 
 
 class Target:
-    def __init__(self, all_dice, target, target_gt, target_counts, len_all, percent, all_random_rolls, did_succeed):
+    def __init__(self, all_dice, target, target_op, all_random_rolls, did_succeed):
         self.name = ','.join(all_dice)
-        self.stats = (target, target_gt, target_counts, len_all, percent, Rolls(all_random_rolls), did_succeed)
+        self.stats = (target, target_op, Rolls(all_random_rolls), did_succeed)
 
-    def print(self):
+    def print(self, show_stats, show_rolls):
         if ',' in self.name:
             print(self.name)
             print('-' * len(self.name))
-        (target, target_gt, target_counts, len_all, percent, rolls, did_succeed) = self.stats
-        rolls.print()
-        operator = target_gt and '>=' or '<='
-        print(f'%rolls {operator}{target}: {target_counts} of {len_all} ({percent}%)')
-        success_text = did_succeed and 'Succeeded' or 'Failed'
-        print(f'target: {success_text}')
+        (target, target_op, rolls, did_succeed) = self.stats
+        if show_rolls:
+            rolls.print()
+
+        if show_rolls:
+            operator = target_description(target_op, target)
+            success_text = did_succeed and 'Succeeded' or 'Failed'
+            print(f'target ({operator}): {success_text}')
         print()
 
 
@@ -230,7 +276,6 @@ class Rolls:
             total_roll, dice = roll_data
             header = ' + '.join([die.header(show_rolls=len(dice) > 1) for die in dice])
             print(f'  {header} = {total_roll}')
-        print()
 
 
 def add_min(memo, die):
@@ -260,21 +305,22 @@ report = Report()
 for dice_input in attempts:
     if '/' in dice_input:
         dice_input, target = dice_input.split('/', 2)
-        target_gt = True
-        if target == '-':
-            target = None
-        elif target:
-            if target.startswith('-'):
-                target_gt = False
-                target = target[1:]
-            elif target.startswith('+'):
-                target = target[1:]
-
-            try:
-                target = int(target)
-            except ValueError:
-                sys.stderr.write(f'Invalid target: `{target}`\n')
-                sys.exit(1)
+        target_op = TARGET_GTE
+        target_str = target
+        if target.startswith('-'):
+            target_op = TARGET_LTE
+            target = int(target[1:])
+        elif target.startswith('='):
+            target_op = TARGET_EQ
+            target = int(target[1:])
+        elif target.startswith('+'):
+            target = int(target[1:])
+        elif re_target_range.match(target):
+            target_op = TARGET_RANGE
+            target = target.split('-', 2)
+            target = (int(target[0]), int(target[1]))
+        else:
+            target = int(target)
     else:
         target = None
 
@@ -295,10 +341,8 @@ for dice_input in attempts:
         dice_max = reduce(add_max, dice, 0)
         avg = reduce(add_avg, dice, 0)
         total_roll = reduce(lambda a, b: a + b, [die.roll() for die in dice], 0)
-        if target and target_gt:
-            any_roll_success = any_roll_success or total_roll >= target
-        elif target:
-            any_roll_success = any_roll_success or total_roll <= target
+        if target:
+            any_roll_success = any_roll_success or target_test(total_roll, target, target_op)
 
         all_rolls.append(total_roll)
 
@@ -314,24 +358,26 @@ for dice_input in attempts:
     len_all_possible_rolls = len(all_possible_rolls)
 
     # probability of any roll
-    percentages = Percentages(all_dice_inputs)
+    percentages = Percentages(all_dice_inputs, target, target_op)
     for val in range(all_min, all_max + 1):
         count = len([1 for rolls in all_possible_rolls if any(map(lambda die_val: die_val == val, rolls))])
-        percentages.append_stats(val, count, len_all_possible_rolls, percent(count, len_all_possible_rolls))
+        percentages.append_stats(val, count, len_all_possible_rolls)
     report.append_percentages(percentages)
 
     if target:
-        if target_gt:
-            target_counts = len([1 for rolls in all_possible_rolls if any(map(lambda die_val: die_val >= target, rolls))])
-        else:
-            target_counts = len([1 for rolls in all_possible_rolls if any(map(lambda die_val: die_val <= target, rolls))])
+        target_counts = len([1 for rolls in all_possible_rolls if any(map(lambda die_val: target_test(die_val, target, target_op), rolls))])
         attempt_successes.append(target_counts / float(len_all_possible_rolls))
         attempts_did_succeed = attempts_did_succeed and any_roll_success
 
-        target = Target(all_dice_inputs, target, target_gt, target_counts, len_all_possible_rolls, percent(target_counts, len_all_possible_rolls), all_random_rolls, any_roll_success)
+        percentages.set_target_percentages(target, target_op, target_counts, len_all_possible_rolls)
+        target = Target(all_dice_inputs, target, target_op, all_random_rolls, any_roll_success)
         report.append_target(target)
     else:
         report.append_rolls(Rolls(all_random_rolls))
 
 report.set_successes(attempts_did_succeed, attempt_successes)
-report.print()
+
+show_stats = not ('--roll' in options or '--percents' in options) or '--stats' in options
+show_percentages = not ('--roll' in options or '--stats' in options) or '--percents' in options
+show_rolls = not ('--stats' in options or '--percents' in options) or '--roll' in options
+report.print(show_stats=show_stats, show_percentages=show_percentages, show_rolls=show_rolls)

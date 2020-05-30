@@ -1,7 +1,9 @@
 # Basic Rolls
 
+###### Information about a die roll
+
 ```
-$ d6
+$ roll d6
 +---------+
 |  STATS  |
 +---------+
@@ -23,14 +25,79 @@ d6
 5: 1 of 6 (16.7%)
 6: 1 of 6 (16.7%)
 
-+----------------+
-|  RANDOM ROLLS  |
-+----------------+
++---------+
+|  ROLLS  |
++---------+
   d6 = 6
 ```
 
+###### Only show dice rolls
+
 ```
-$ 1+2d12
+$ roll d6 --roll
++---------+
+|  ROLLS  |
++---------+
+  d6 = 2
+```
+
+###### Dice roll with target
+
+```
+$ roll d6/4 --roll
++---------+
+|  ROLLS  |
++---------+
+  d6 = 5
+target (>=4): Succeeded
+```
+
+###### Only show stats, with modifier
+
+```
+$ roll 2+d12 --stats
++---------+
+|  STATS  |
++---------+
+ 2 + d12
+---------
+min: 3
+max: 14
+avg: 8.5
+```
+
+###### Only show percentages
+
+```
+$ roll d12+d6 --percents
++---------------+
+|  PERCENTAGES  |
++---------------+
+d12+d6
+------
+2: 1 of 72 (1.4%)
+3: 2 of 72 (2.8%)
+4: 3 of 72 (4.2%)
+5: 4 of 72 (5.6%)
+6: 5 of 72 (6.9%)
+7: 6 of 72 (8.3%)
+8: 6 of 72 (8.3%)
+9: 6 of 72 (8.3%)
+10: 6 of 72 (8.3%)
+11: 6 of 72 (8.3%)
+12: 6 of 72 (8.3%)
+13: 6 of 72 (8.3%)
+14: 5 of 72 (6.9%)
+15: 4 of 72 (5.6%)
+16: 3 of 72 (4.2%)
+17: 2 of 72 (2.8%)
+18: 1 of 72 (1.4%)
+```
+
+###### Modifier and multiple dice
+
+```
+$ roll 1+2d12
 +---------+
 |  STATS  |
 +---------+
@@ -69,9 +136,9 @@ avg: 14
 24: 2 of 144 (1.4%)
 25: 1 of 144 (0.7%)
 
-+----------------+
-|  RANDOM ROLLS  |
-+----------------+
++---------+
+|  ROLLS  |
++---------+
   1 + 2 × d12 (11, 10) = 22
 ```
 
@@ -80,7 +147,7 @@ avg: 14
 ###### 4 or higher succeeds on a d8
 
 ```
-$ d8/4
+$ roll d8/4
 +---------+
 |  STATS  |
 +---------+
@@ -116,7 +183,7 @@ target: Succeeded
 ###### 4 or LOWER succeeds on a d8
 
 ```
-$ d8/-4
+$ roll d8/-4
 +---------+
 |  STATS  |
 +---------+
@@ -152,7 +219,7 @@ target: Succeeded
 # Chance of either roll succeeding
 
 ```
-$ d8,d6/+4
+$ roll d8,d6/+4
 +---------+
 |  STATS  |
 +---------+
@@ -197,7 +264,7 @@ target: Succeeded
 # Roll multiple target dice in succession, every roll must succeed
 
 ```
-$ d8/4 d6/4
+$ roll d8/4 d6/4
 +---------+
 |  STATS  |
 +---------+
@@ -265,7 +332,7 @@ then_ needs to roll a 6 or higher using a `d12` with a `+1` modifier, or a `d6`
 wild dice.
 
 ```
-$ d10,d6/4 1+d12,d6/6
+$ roll d10,d6/4 1+d12,d6/6
 +---------+
 |  STATS  |
 +---------+
