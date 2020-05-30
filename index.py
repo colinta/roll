@@ -167,7 +167,7 @@ class Report:
         self.rolls = []
         self.successes = None
 
-    def print(self, show_stats, show_percentages, show_rolls):
+    def print(self, show_stats, show_rolls):
         if show_stats:
             section('STATS')
             for (header, dice_min, dice_max, avg) in self.stats:
@@ -177,7 +177,7 @@ class Report:
                 print(f'avg: {avg}')
                 print()
 
-        if show_percentages:
+        if show_stats:
             section('PERCENTAGES')
             for data in self.percentages:
                 data.print()
@@ -377,7 +377,6 @@ for dice_input in attempts:
 
 report.set_successes(attempts_did_succeed, attempt_successes)
 
-show_stats = not ('--roll' in options or '--percents' in options) or '--stats' in options
-show_percentages = not ('--roll' in options or '--stats' in options) or '--percents' in options
-show_rolls = not ('--stats' in options or '--percents' in options) or '--roll' in options
-report.print(show_stats=show_stats, show_percentages=show_percentages, show_rolls=show_rolls)
+show_stats = '--stats' in options or not options
+show_rolls = '--roll' in options or not options
+report.print(show_stats=show_stats, show_rolls=show_rolls)
