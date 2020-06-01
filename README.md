@@ -1,6 +1,6 @@
 # Basic Rolls
 
-###### Information about a die roll
+###### Roll a die
 
 ```
 $ roll d6
@@ -31,20 +31,36 @@ d6
   d6 = 6
 ```
 
-###### Only show dice rolls
+###### Show stats about a die roll
 
 ```
-$ roll d6 --roll
+$ roll d6 --stats
 +---------+
-|  ROLLS  |
+|  STATS  |
 +---------+
-  d6 = 2
+ d6
+----
+min: 1
+max: 6
+avg: 3.5
+
++---------------+
+|  PERCENTAGES  |
++---------------+
+d6
+--
+1: 1 of 6 (16.7%)
+2: 1 of 6 (16.7%)
+3: 1 of 6 (16.7%)
+4: 1 of 6 (16.7%)
+5: 1 of 6 (16.7%)
+6: 1 of 6 (16.7%)
 ```
 
-###### Dice roll with target
+###### Die roll with target
 
 ```
-$ roll d6/4 --roll
+$ roll d6/4
 +---------+
 |  ROLLS  |
 +---------+
@@ -52,24 +68,29 @@ $ roll d6/4 --roll
 target (>=4): Succeeded
 ```
 
-###### Only show stats, with modifier
+###### Die roll with modifier
 
 ```
-$ roll 2+d12 --stats
+$ roll 2+d12
++---------+
+|  ROLLS  |
++---------+
+  2 + d12 (12) = 14
+```
+
+###### Show stats about multi-die rolls
+
+```
+$ roll d12+d6 --stats
 +---------+
 |  STATS  |
 +---------+
- 2 + d12
----------
-min: 3
-max: 14
-avg: 8.5
-```
+ d12 + d6
+----------
+min: 2
+max: 18
+avg: 10.0
 
-###### Only show percentages
-
-```
-$ roll d12+d6 --percents
 +---------------+
 |  PERCENTAGES  |
 +---------------+
@@ -99,47 +120,9 @@ d12+d6
 ```
 $ roll 1+2d12
 +---------+
-|  STATS  |
-+---------+
- 1 + 2 × d12
--------------
-min: 3
-max: 25
-avg: 14
-
-+---------------+
-|  PERCENTAGES  |
-+---------------+
-1+2d12
-------
-3: 1 of 144 (0.7%)
-4: 2 of 144 (1.4%)
-5: 3 of 144 (2.1%)
-6: 4 of 144 (2.8%)
-7: 5 of 144 (3.5%)
-8: 6 of 144 (4.2%)
-9: 7 of 144 (4.9%)
-10: 8 of 144 (5.6%)
-11: 9 of 144 (6.2%)
-12: 10 of 144 (6.9%)
-13: 11 of 144 (7.6%)
-14: 12 of 144 (8.3%)
-15: 11 of 144 (7.6%)
-16: 10 of 144 (6.9%)
-17: 9 of 144 (6.2%)
-18: 8 of 144 (5.6%)
-19: 7 of 144 (4.9%)
-20: 6 of 144 (4.2%)
-21: 5 of 144 (3.5%)
-22: 4 of 144 (2.8%)
-23: 3 of 144 (2.1%)
-24: 2 of 144 (1.4%)
-25: 1 of 144 (0.7%)
-
-+---------+
 |  ROLLS  |
 +---------+
-  1 + 2 × d12 (11, 10) = 22
+  1 + 2 × d12 (4, 4) = 9
 ```
 
 # Target check
@@ -147,7 +130,7 @@ avg: 14
 ###### 4 or higher succeeds on a d8
 
 ```
-$ roll d8/4
+$ roll d8/4 --roll --stats
 +---------+
 |  STATS  |
 +---------+
@@ -175,14 +158,14 @@ d8 >= 4
 +---------+
 |  ROLLS  |
 +---------+
-  d8 = 4
+  d8 = 8
 target (>= 4): Succeeded
 ```
 
 ###### 4 or LOWER succeeds on a d8
 
 ```
-$ roll d8/-4
+$ roll d8/-4 --roll --stats
 +---------+
 |  STATS  |
 +---------+
@@ -217,7 +200,7 @@ target (<= 4): Failed
 # Chance of either roll succeeding
 
 ```
-$ roll d8,d6/+4
+$ roll d8,d6/+4 --roll --stats
 +---------+
 |  STATS  |
 +---------+
@@ -261,7 +244,7 @@ target (>= 4): Succeeded
 # Roll multiple target dice in succession, every roll must succeed
 
 ```
-$ roll d8/4 d6/4
+$ roll d8/4 d6/4 --roll --stats
 +---------+
 |  STATS  |
 +---------+
@@ -328,7 +311,7 @@ then_ needs to roll a 6 or higher using a `d12` with a `+1` modifier, or a `d6`
 wild dice.
 
 ```
-$ roll d10,d6/4 1+d12,d6/6
+$ roll d10,d6/4 1+d12,d6/6 --roll --stats
 +---------+
 |  STATS  |
 +---------+

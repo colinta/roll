@@ -1,5 +1,5 @@
 from functools import reduce
-from .util import (percent)
+from .util import (percent, target_description)
 
 
 def section(name):

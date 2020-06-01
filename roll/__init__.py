@@ -6,7 +6,8 @@ from .die import Die
 from .result import Result
 from .util import (
     RE_INPUT, RE_TARGET_RANGE, add_min, add_max, add_avg, add_die_rolls,
-    combine_rolls, percent
+    combine_rolls, percent, target_test,
+    TARGET_GTE, TARGET_LTE, TARGET_EQ, TARGET_RANGE
     )
 from .report import Report, Percentages, Target, Rolls
 
