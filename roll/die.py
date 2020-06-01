@@ -65,6 +65,10 @@ class Die:
                 count = int(count)
             else:
                 count = 1
-            return Die(0, count, int(die))
+            if die == '%':
+                die = 100
+            else:
+                die = int(die)
+            return Die(0, count, die)
         else:
             return Die(int(dice_input), 0, 0)

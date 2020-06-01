@@ -2,7 +2,7 @@ import re
 
 
 RE_CONSTANT = r'[+-]?\d+'
-RE_DICE = r'\d* *d\d+'
+RE_DICE = r'\d* *d(\d+|%)'
 RE_EITHER = r'({}|{})'.format(RE_CONSTANT, RE_DICE)
 RE_DICE_FORMULA = r'{0}(\+{0})*'.format(RE_EITHER)
 RE_ALL_DICE = r'{0}(,{0})*'.format(RE_DICE_FORMULA)
