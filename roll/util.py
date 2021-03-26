@@ -1,8 +1,9 @@
 import re
 
 
-RE_CONSTANT = r'[+-]?\d+'
-RE_DICE = r'\d* *d(\d+|%)'
+RE_CONSTANT = r'[-]?\d+'
+RE_NUMBER = r'\d+'
+RE_DICE = r'(\d+\*)?(d\d+!|\d*d(\d+|%))'
 RE_EITHER = r'({}|{})'.format(RE_CONSTANT, RE_DICE)
 RE_DICE_FORMULA = r'{0}(\+{0})*'.format(RE_EITHER)
 RE_ALL_DICE = r'{0}(,{0})*'.format(RE_DICE_FORMULA)
@@ -57,4 +58,6 @@ def combine_rolls(memo, rolls):
     return [r + (n, ) for r in memo for n in rolls]
 
 def percent(val, total):
+    if not total:
+        return 100
     return round(1000 * val / float(total)) / 10.0

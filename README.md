@@ -1,4 +1,32 @@
-# Basic Rolls
+# Roll
+
+The main point of this dice rolling script is to show statistics around the
+likelihoods of different values. Plenty of dice rollers are out there, this one
+shows all the possible values and their likelihoods.
+
+It supports exploding dice, which technically do not have a highest maximum
+value. For the sake of calculating the probabilities of the possible values, the
+program assumes that rolling 3 consecutive exploding dice is impossible (i.e.
+the highest roll of a d4 exploding die is 12). But the rolling simulator _does_
+keep rolling as long as necessary.
+
+Supported dice expressions:
+
+- Any N-sided die, e.g. `d6`, `d8`, `d9`
+- Multiple dice of the same kind (added together), e.g. `2d6`, `1d8`, `3d9`
+- Modifiers (only the _add_ operation is supported, but negative numbers are
+  fine), e.g. `4+d6`, `d6+-2`, `-2+d6+d8`
+- Exploding dice, e.g. `d6!`, `d8!`
+- Multipliers, e.g. `2*d6`
+- Multiple choices, e.g. `d10!,d6!,2+d10`
+- Targets, including greater than, less than, equal to, or in a range:
+  - `d10/4`, any number ≥ 4 succeeds
+  - `d10/-4`, any number ≤ 4 succeeds
+  - `d10/=4`, only a roll of 4 succeeds
+  - `d10/2-9`, any number 2 through 9 succeeds
+
+Passing multiple arguments with targets are treated as successive target rolls,
+e.g. the odds get smaller and smaller to succeed on all rolls.
 
 ###### Roll a die
 
@@ -31,32 +59,6 @@ d6
   d6 = 6
 ```
 
-###### Show stats about a die roll
-
-```
-$ roll d6 --stats
-+---------+
-|  STATS  |
-+---------+
- d6
-----
-min: 1
-max: 6
-avg: 3.5
-
-+---------------+
-|  PERCENTAGES  |
-+---------------+
-d6
---
-1: 1 of 6 (16.7%)
-2: 1 of 6 (16.7%)
-3: 1 of 6 (16.7%)
-4: 1 of 6 (16.7%)
-5: 1 of 6 (16.7%)
-6: 1 of 6 (16.7%)
-```
-
 ###### Die roll with target
 
 ```
@@ -78,10 +80,10 @@ $ roll 2+d12
   2 + d12 (12) = 14
 ```
 
-###### Show stats about multi-die rolls
+###### Multi-die rolls
 
 ```
-$ roll d12+d6 --stats
+$ roll d12+d6
 +---------+
 |  STATS  |
 +---------+
@@ -130,7 +132,7 @@ $ roll 1+2d12
 ###### 4 or higher succeeds on a d8
 
 ```
-$ roll d8/4 --roll --stats
+$ roll d8/4 --roll
 +---------+
 |  STATS  |
 +---------+
@@ -165,7 +167,7 @@ target (>= 4): Succeeded
 ###### 4 or LOWER succeeds on a d8
 
 ```
-$ roll d8/-4 --roll --stats
+$ roll d8/-4 --roll
 +---------+
 |  STATS  |
 +---------+
@@ -200,7 +202,7 @@ target (<= 4): Failed
 # Chance of either roll succeeding
 
 ```
-$ roll d8,d6/+4 --roll --stats
+$ roll d8,d6/+4 --roll
 +---------+
 |  STATS  |
 +---------+
@@ -244,7 +246,7 @@ target (>= 4): Succeeded
 # Roll multiple target dice in succession, every roll must succeed
 
 ```
-$ roll d8/4 d6/4 --roll --stats
+$ roll d8/4 d6/4 --roll
 +---------+
 |  STATS  |
 +---------+
@@ -311,7 +313,7 @@ then_ needs to roll a 6 or higher using a `d12` with a `+1` modifier, or a `d6`
 wild dice.
 
 ```
-$ roll d10,d6/4 1+d12,d6/6 --roll --stats
+$ roll d10,d6/4 1+d12,d6/6 --roll
 +---------+
 |  STATS  |
 +---------+

@@ -87,10 +87,17 @@ class Percentages:
         self.target = None
 
     def print(self):
+        if not self.stats:
+            return
+
         print(self.name)
         print('-' * len(self.name))
+
         for (val, count, len_all, percent) in self.stats:
+            if not count:
+                continue
             print(f'{val}: {count} of {len_all} ({percent}%)')
+
         if self.target:
             target, target_op, target_counts, len_all, percent = self.target
             operator = target_description(target_op, target)
@@ -131,5 +138,5 @@ class Rolls:
     def print(self):
         for roll_data in self.rolls:
             total_roll, dice = roll_data
-            header = ' + '.join([die.header(show_rolls=len(dice) > 1) for die in dice])
+            header = ' + '.join([die.header(show_rolls=True) for die in dice])
             print(f'  {header} = {total_roll}')

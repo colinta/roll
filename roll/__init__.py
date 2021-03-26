@@ -12,24 +12,30 @@ from .util import (
 from .report import Report, Percentages, Target, Rolls
 
 
-def run(attempts):
+def run(attempts, show_stats=True):
     random.seed()
 
     for dice_input in attempts:
         if not RE_INPUT.match(dice_input):
             err = io.StringIO()
-            err.write(f'Invalid dice: `{dice_input}`\n')
-            err.write('Dice must be in the form "[+,-]{{M}}+{{N}}d{{X}}(,...more dice)[/{{T}}]" where M, N, X, T are:\n')
-            err.write('M - Modifier (positive or negative)\n')
-            err.write('N - Number of dice\n')
-            err.write('X - Number of sides, or `%`\n')
-            err.write('T - Target value\n')
-            err.write('    4 or +4 means "Greater than or equal to 4"\n')
-            err.write('    -4 means "Less than or equal to 4"\n')
-            err.write('    =4 means "Equal to 4"\n')
-            err.write('    3-5 means "In the range 3-5, inclusive"\n')
+            err.write(f'Invalid dice expression: `{dice_input}`\n')
+            err.write('Valid dice expressions include:\n')
+            err.write('• N sided die: `d6`, `d8`, `d20`\n')
+            err.write('• Percent die: `d%`\n')
+            err.write('• Many N-sided dice: `2d6`, `5d4`\n')
+            err.write('• Multiplying N-sided dice: `2*d6`, `5*2d4`\n')
+            err.write('• N-sided exploding die: `d6!`, `d12!`\n')
+            err.write('• Adding a modifier (only add is supported, but negative modifiers are supported):\n')
+            err.write('  Example: `5+d6`, `d10+-2`, `-2+d2`\n')
+            err.write('• Comma separated list of these expressions, to make multiple rolls\n')
+            err.write('  Example: `d10,d6`, `d8!,d6!`\n')
+            err.write('• Specifying a target `/T`, with valid targets:\n')
+            err.write('    /4 or /+4 means "Greater than or equal to 4"\n')
+            err.write('    /-4 means "Less than or equal to 4"\n')
+            err.write('    /=4 means "Equal to 4"\n')
+            err.write('    /3-5 means "In the range 3-5, inclusive"\n')
+            err.write('    Example: `d6/4`, `2d10/=4`\n')
             err.write('\n')
-            err.write('When more dice are included, any can be used to match the target (e.g. Savage Worlds Wild Die).\n')
             result = Result.Err(err.getvalue())
             return result
 
@@ -71,40 +77,43 @@ def run(attempts):
             dice_inputs = dice_option.split('+')
             dice = [Die.parse(input) for input in dice_inputs]
             all_dice.append(dice)
-
-            dice_min = reduce(add_min, dice, 0)
-            dice_max = reduce(add_max, dice, 0)
-            avg = reduce(add_avg, dice, 0)
             total_roll = reduce(lambda a, b: a + b, [die.roll() for die in dice], 0)
+            all_rolls.append(total_roll)
+            header = ' + '.join(map(lambda d: d.header(), dice))
+            all_random_rolls.append((total_roll, dice))
+
             if target:
                 any_roll_success = any_roll_success or target_test(total_roll, target, target_op)
 
-            all_rolls.append(total_roll)
+            if show_stats:
+                dice_min = reduce(add_min, dice, 0)
+                dice_max = reduce(add_max, dice, 0)
+                avg = reduce(add_avg, dice, 0)
 
-            possible_rolls = reduce(add_die_rolls, dice, [0])
-            all_possible_rolls = combine_rolls(all_possible_rolls, possible_rolls)
-            all_min = min(dice_min, all_min is None and dice_min or all_min)
-            all_max = max(dice_max, all_max is None and dice_max or all_max)
+                possible_rolls = reduce(add_die_rolls, dice, [0])
+                all_possible_rolls = combine_rolls(all_possible_rolls, possible_rolls)
+                all_min = min(dice_min, all_min is None and dice_min or all_min)
+                all_max = max(dice_max, all_max is None and dice_max or all_max)
 
-            header = ' + '.join(map(lambda d: d.header(), dice))
-            all_random_rolls.append((total_roll, dice))
-            report.append_stats(header, dice_min, dice_max, avg)
+                report.append_stats(header, dice_min, dice_max, avg)
 
         len_all_possible_rolls = len(all_possible_rolls)
 
         # probability of any roll
-        percentages = Percentages(dice_input, target, target_op)
-        for val in range(all_min, all_max + 1):
-            count = len([1 for rolls in all_possible_rolls if any(map(lambda die_val: die_val == val, rolls))])
-            percentages.append_stats(val, count, len_all_possible_rolls)
-        report.append_percentages(percentages)
+        if show_stats:
+            percentages = Percentages(dice_input, target, target_op)
+            for val in range(all_min, all_max + 1):
+                count = len([1 for rolls in all_possible_rolls if any(map(lambda die_val: die_val == val, rolls))])
+                percentages.append_stats(val, count, len_all_possible_rolls)
+            report.append_percentages(percentages)
 
         if target:
-            target_counts = len([1 for rolls in all_possible_rolls if any(map(lambda die_val: target_test(die_val, target, target_op), rolls))])
-            attempt_successes.append(target_counts / float(len_all_possible_rolls))
-            attempts_did_succeed = attempts_did_succeed and any_roll_success
+            if show_stats:
+                target_counts = len([1 for rolls in all_possible_rolls if any(map(lambda die_val: target_test(die_val, target, target_op), rolls))])
+                attempt_successes.append(target_counts / float(len_all_possible_rolls))
+                attempts_did_succeed = attempts_did_succeed and any_roll_success
+                percentages.set_target_percentages(target, target_op, target_counts, len_all_possible_rolls)
 
-            percentages.set_target_percentages(target, target_op, target_counts, len_all_possible_rolls)
             target = Target(all_dice_inputs, target, target_op, all_random_rolls, any_roll_success)
             report.append_target(target)
         else:
@@ -127,9 +136,9 @@ def main():
         sys.stderr.write('Missing dice argument\n')
         sys.exit(1)
 
-    show_stats = '--stats' in options
+    show_stats = not options
     show_rolls = '--roll' in options or not options
-    result = run(rolls)
+    result = run(rolls, show_stats=show_stats)
     if isinstance(result, Result.Err):
         print(result.err)
     else:
